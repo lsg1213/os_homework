@@ -13,7 +13,7 @@ parser.add_option("-l", "--jlist", default="", help="instead of random jobs, pro
                   action="store", type="string", dest="jlist")
 parser.add_option("-m", "--maxlen", default=10, help="max length of job",
                   action="store", type="int", dest="maxlen")
-parser.add_option("-p", "--policy", default="FIFO", help="sched policy to use: SJF, FIFO, RR",
+parser.add_option("-p", "--policy", default="FIFO", help="sched policy to use: SJF, FIFO, RR, STCF",
                   action="store", type="string", dest="policy")
 parser.add_option("-q", "--quantum", help="length of time slice for RR policy", default=1, 
                   action="store", type="int", dest="quantum")
@@ -41,15 +41,17 @@ joblist = []
 if options.jlist == '':
     for jobnum in range(0,options.jobs):
         runtime = int(options.maxlen * random.random()) + 1
-        joblist.append([jobnum, runtime])
-        print '  Job', jobnum, '( length = ' + str(runtime) + ' )'
+        arrivaltime = int(options.maxlen * random.random()) + 1
+        joblist.append([jobnum, arrivaltime, runtime])
+        print '  Job', jobnum, '( arrival time = ' + str(arrivaltime) + '  length = ' + str(runtime) + ' )'
 else:
     jobnum = 0
+    print('Please set the arrival time of the list')
     for runtime in options.jlist.split(','):
-        joblist.append([jobnum, float(runtime)])
+        joblist.append([jobnum, float(input('length = %.2lf \'s arrival time: ' % float(runtime))), float(runtime)])
         jobnum += 1
     for job in joblist:
-        print '  Job', job[0], '( length = ' + str(job[1]) + ' )'
+        print '  Job', job[0], '( arrival time = ' + str(job[1]) + '  length = ' + str(job[2]) + ' )'
 print '\n'
 
 if options.solve == True:
@@ -58,12 +60,15 @@ if options.solve == True:
         joblist = sorted(joblist, key=operator.itemgetter(1))
         options.policy = 'FIFO'
     
-    if options.policy == 'FIFO':
+    if options.policy == 'FIFO':    #success to modify
         thetime = 0
         print 'Execution trace:'
+        joblist = sorted(joblist, key=lambda a: a[1])
         for job in joblist:
-            print '  [ time %3d ] Run job %d for %.2f secs ( DONE at %.2f )' % (thetime, job[0], job[1], thetime + job[1])
-            thetime += job[1]
+            if thetime < job[1]: 
+                thetime = job[1]
+            print '  [ time %3d ] Run job %d which is arrived at %.2f for %.2f secs ( DONE at %.2f )' % (thetime, job[0], job[1], job[2], thetime + job[2])
+            thetime += job[2]
 
         print '\nFinal statistics:'
         t     = 0.0
