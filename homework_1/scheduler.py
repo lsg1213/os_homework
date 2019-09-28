@@ -85,6 +85,7 @@ if options.solve == True:
         waitSum       = 0.0
         responseSum   = 0.0
 
+        # 여기부터 수정해야함
         for tmp in joblist:
             jobnum  = tmp[0]
             arrival = tmp[1]
