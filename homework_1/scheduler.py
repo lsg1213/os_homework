@@ -57,8 +57,49 @@ print '\n'
 if options.solve == True:
     print '** Solutions **\n'
     if options.policy == 'SJF':
-        joblist = sorted(joblist, key=operator.itemgetter(1))
-        options.policy = 'FIFO'
+        l = {}
+        for i in joblist:
+            l[i[1]] = []
+        for i in joblist:
+            l[i[1]].append(i)
+        joblist = []
+        for i in l:
+            l[i] = sorted(l[i], key=lambda a: a[2])
+            for j in l[i]:
+                joblist.append(j)
+        
+        tmplist = []
+        thetime = 0
+        print 'Execution trace:'
+        for job in joblist:
+            if thetime < job[1]: 
+                thetime = job[1]
+            print '  [ time %3d ] Run job %d which is arrived at %.2f for %.2f secs ( DONE at %.2f )' % (thetime, job[0], job[1], job[2], thetime + job[2])
+            tmplist.append([job[0],thetime-job[1],thetime+job[2]-job[1]])   # 순서대로, jobnum, response time, turnaround time
+            thetime += job[2]
+
+        print '\nFinal statistics:'
+        t     = joblist[0][1]
+        count = 0
+        turnaroundSum = 0.0
+        waitSum       = 0.0
+        responseSum   = 0.0
+
+        for tmp in joblist:
+            jobnum  = tmp[0]
+            arrival = tmp[1]
+            runtime = tmp[2]
+
+            response = t - arrival
+            turnaround = t + runtime - arrival
+            wait       = t
+            print '  Job %3d -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f' % (jobnum, response, turnaround, wait)
+            responseSum   += response
+            turnaroundSum += turnaround
+            waitSum       += wait
+            t += runtime
+            count = count + 1
+        print '\n  Average -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f\n' % (responseSum/count, turnaroundSum/count, waitSum/count)
     
     if options.policy == 'FIFO':    #success to modify
         thetime = 0
@@ -125,7 +166,7 @@ if options.solve == True:
                 print '  [ time %3d ] Run job %3d for %.2f secs' % (thetime, jobnum, ranfor)
                 runlist.append([jobnum, runtime])
             else:
-                ranfor = runtime;
+                ranfor = runtime
                 print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (thetime, jobnum, ranfor, thetime + ranfor)
                 turnaround[jobnum] = thetime + ranfor
                 jobcount -= 1
