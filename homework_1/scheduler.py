@@ -42,10 +42,7 @@ if options.jlist == '':
     for jobnum in range(0,options.jobs):
         runtime = int(options.maxlen * random.random()) + 1
         arrivaltime = 0
-        while True:
-            arrivaltime = int(options.maxlen * random.random()) + 1
-            if arrivaltime < runtime:
-                break
+        arrivaltime = int(options.maxlen * random.random()) + 1
         joblist.append([jobnum, arrivaltime, runtime])
         print '  Job', jobnum, '( arrival time = ' + str(arrivaltime) + '  length = ' + str(runtime) + ' )'
 else:
@@ -210,8 +207,20 @@ if options.solve == True:
 
     if options.policy == 'STCF':
         # sorting
+        joblist = sorted(sorted(joblist, key=lambda a: a[2]), key=lambda a: a[1])
+        runtime = joblist[0][1]
+        timelist = {}
+        for i in joblist:
+            timelist[i[0]] = 0
+        prevrun = 0
+        mode = 0
         for job in joblist:
-
+            print '  [ time %3d ] Run job %3d for %.2f secs' % (runtime, job[0], runtime - prevrun),
+            if (timelist[job[0]] == job[2]):
+                print
+            else:
+                print('')
+        
 
 
     if options.policy != 'FIFO' and options.policy != 'SJF' and options.policy != 'RR' and options.policy != 'STCF': 
