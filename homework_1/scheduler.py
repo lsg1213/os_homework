@@ -23,6 +23,9 @@ parser.add_option("-c", help="compute answers for me", action="store_true", defa
 
 random.seed(options.seed)
 
+options.jlist = '1,2,3' # debugggggggggggggggggggg
+options.policy = 'RR'   # debugggggggggggggggggggg
+options.solve = True    # debugggggggggggggggggggg
 print 'ARG policy', options.policy
 if options.jlist == '':
     print 'ARG jobs', options.jobs
@@ -36,7 +39,6 @@ print ''
 print 'Here is the job list, with the run time of each job: '
 
 import operator
-
 joblist = []
 if options.jlist == '':
     for jobnum in range(0,options.jobs):
@@ -147,28 +149,43 @@ if options.solve == True:
         for e in joblist:
             runlist.append(e)
 
-        thetime  = 0.0
-        while jobcount > 0:
-            # print '%d jobs remaining' % jobcount
-            job = runlist.pop(0)
-            jobnum  = job[0]
-            runtime = float(job[1])
-            if response[jobnum] == -1:
-                response[jobnum] = thetime
-            currwait = thetime - lastran[jobnum]
-            wait[jobnum] += currwait
-            if runtime > quantum:
-                runtime -= quantum
-                ranfor = quantum
-                print '  [ time %3d ] Run job %3d for %.2f secs' % (thetime, jobnum, ranfor)
-                runlist.append([jobnum, runtime])
-            else:
-                ranfor = runtime
-                print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (thetime, jobnum, ranfor, thetime + ranfor)
-                turnaround[jobnum] = thetime + ranfor
-                jobcount -= 1
-            thetime += ranfor
-            lastran[jobnum] = thetime
+        # sorting
+        li = []
+        joblist = sorted(joblist, key=lambda a:a[1])    # stable sort
+        runlist = []
+        timelist = {}
+        turn = {}
+        wait = {}
+        res = {}
+        for i in joblist:
+            timelist[i[0]] = 0
+            turn[i[0]] = -1
+            wait[i[0]] = -1
+            res[i[0]] = -1
+        runtime = joblist[0][1] # arrival time of first job
+
+        while len(timelist) != 0:
+            for job in joblist:
+                try:
+                    if (res[job[0]] == -1) res[job[0]] = runtime
+                    timelist[job[0]] += options.quantum
+                    if (int(timelist[job[0]]) >= int(job[2])):
+                        timelist[job[0]] = float(job[2])
+                        if (int(timelist[job[0]]) == int(job[2])):
+                            print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, job[0], options.quantum, runtime + options.quantum)
+                            runtime += options.quantum
+                        else:
+                            print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, job[0], job[2] % options.quantum, runtime + job[2] % options.quantum)
+                            runtime += job[2] % options.quantum
+                        del timelist[job[0]]
+                    else:
+                        print '  [ time %3d ] Run job %3d for %.2f secs' % (runtime, job[0], options.quantum)
+                        runtime += options.quantum
+                except:
+                    continue
+
+        
+
 
         print '\nFinal statistics:'
         turnaroundSum = 0.0
