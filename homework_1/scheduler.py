@@ -23,9 +23,7 @@ parser.add_option("-c", help="compute answers for me", action="store_true", defa
 
 random.seed(options.seed)
 
-options.jlist = '1,2,3' # debugggggggggggggggggggg
-options.policy = 'RR'   # debugggggggggggggggggggg
-options.solve = True    # debugggggggggggggggggggg
+
 print 'ARG policy', options.policy
 if options.jlist == '':
     print 'ARG jobs', options.jobs
@@ -167,15 +165,18 @@ if options.solve == True:
         while len(timelist) != 0:
             for job in joblist:
                 try:
-                    if (res[job[0]] == -1) res[job[0]] = runtime
+                    if (res[job[0]] == -1):
+                        res[job[0]] = runtime
                     timelist[job[0]] += options.quantum
                     if (int(timelist[job[0]]) >= int(job[2])):
                         timelist[job[0]] = float(job[2])
                         if (int(timelist[job[0]]) == int(job[2])):
                             print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, job[0], options.quantum, runtime + options.quantum)
+                            turn[job[0]] = runtime + options.quantum
                             runtime += options.quantum
                         else:
                             print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, job[0], job[2] % options.quantum, runtime + job[2] % options.quantum)
+                            turn[job[0]] = runtime + job[2] % options.quantum
                             runtime += job[2] % options.quantum
                         del timelist[job[0]]
                     else:
@@ -184,18 +185,21 @@ if options.solve == True:
                 except:
                     continue
 
-        
+        for i in joblist:
+            wait[i[0]] = turn[i[0]] - i[1] - i[2]
+            turn[i[0]] -= i[1]
+            res[i[0]] -= i[1]
 
 
         print '\nFinal statistics:'
         turnaroundSum = 0.0
         waitSum       = 0.0
         responseSum   = 0.0
-        for i in range(0,len(joblist)):
-            turnaroundSum += turnaround[i]
-            responseSum += response[i]
-            waitSum += wait[i]
-            print '  Job %3d -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f' % (i, response[i], turnaround[i], wait[i])
+        for i in joblist:
+            turnaroundSum += turn[i[0]]
+            responseSum += res[i[0]]
+            waitSum += wait[i[0]]
+            print '  Job %3d -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f' % (i[0], res[i[0]], turn[i[0]], wait[i[0]])
         count = len(joblist)
         
         print '\n  Average -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f\n' % (responseSum/count, turnaroundSum/count, waitSum/count)
