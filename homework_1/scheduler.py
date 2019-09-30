@@ -41,7 +41,11 @@ joblist = []
 if options.jlist == '':
     for jobnum in range(0,options.jobs):
         runtime = int(options.maxlen * random.random()) + 1
-        arrivaltime = int(options.maxlen * random.random()) + 1
+        arrivaltime = 0
+        while True:
+            arrivaltime = int(options.maxlen * random.random()) + 1
+            if arrivaltime < runtime:
+                break
         joblist.append([jobnum, arrivaltime, runtime])
         print '  Job', jobnum, '( arrival time = ' + str(arrivaltime) + '  length = ' + str(runtime) + ' )'
 else:
@@ -204,7 +208,13 @@ if options.solve == True:
         
         print '\n  Average -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f\n' % (responseSum/count, turnaroundSum/count, waitSum/count)
 
-    if options.policy != 'FIFO' and options.policy != 'SJF' and options.policy != 'RR': 
+    if options.policy == 'STCF':
+        # sorting
+        for job in joblist:
+
+
+
+    if options.policy != 'FIFO' and options.policy != 'SJF' and options.policy != 'RR' and options.policy != 'STCF': 
         print 'Error: Policy', options.policy, 'is not available.'
         sys.exit(0)
 else:
