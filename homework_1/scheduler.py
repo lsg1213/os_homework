@@ -75,7 +75,7 @@ if options.solve == True:
             if thetime < job[1]: 
                 thetime = job[1]
             print '  [ time %3d ] Run job %d which is arrived at %.2f for %.2f secs ( DONE at %.2f )' % (thetime, job[0], job[1], job[2], thetime + job[2])
-            tmplist.append([job[0],thetime-job[1],thetime+job[2]-job[1]])   # 순서대로, jobnum, response time, turnaround time
+            tmplist.append([job[0],thetime-job[1],thetime + job[2] - job[1]])   # jobnum, response time, turnaround time
             thetime += job[2]
 
         print '\nFinal statistics:'
@@ -85,20 +85,16 @@ if options.solve == True:
         waitSum       = 0.0
         responseSum   = 0.0
 
-        # 여기부터 수정해야함
-        for tmp in joblist:
-            jobnum  = tmp[0]
-            arrival = tmp[1]
-            runtime = tmp[2]
+        
+        for tmp in tmplist:
 
-            response = t - arrival
-            turnaround = t + runtime - arrival
-            wait       = t
-            print '  Job %3d -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f' % (jobnum, response, turnaround, wait)
+            response = tmp[1]
+            turnaround = tmp[2]
+            wait       = tmp[1]
+            print '  Job %3d -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f' % (tmp[0], response, turnaround, wait)
             responseSum   += response
             turnaroundSum += turnaround
             waitSum       += wait
-            t += runtime
             count = count + 1
         print '\n  Average -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f\n' % (responseSum/count, turnaroundSum/count, waitSum/count)
     
