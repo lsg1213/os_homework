@@ -23,8 +23,11 @@ parser.add_option("-c", help="compute answers for me", action="store_true", defa
 
 random.seed(options.seed)
 
+#debugging
+options.policy = 'STCF'
+options.solve = True
 
-print 'ARG policy', options.policy
+print ('ARG policy ' + options.policy)
 if options.jlist == '':
     print 'ARG jobs', options.jobs
     print 'ARG maxlen', options.maxlen
@@ -213,34 +216,38 @@ if options.solve == True:
         turn = {}
         wait = {}
         res = {}
-        runlist = [joblist[0][0]]    # jobnum
+        runlist = []    # jobnum
         for i in joblist:
             i.append(i[2]) # joblist[i][3] remain = joblist[i][2] initializing
             rearrange.append(i[1])
         rearrange = sorted(list(set(rearrange)))
 
-        for re in range(rearrange):
+        for re in range(len(rearrange)):
             for i in joblist:
-                if i[1] == re:
+                if i[1] == rearrange[re]:
                     runlist.append(i)
             runlist = sorted(runlist, key=lambda a: a[3])
-            runtime = rearrange[re]
+            
             if re + 1 <= len(rearrange) - 1:
                 try:
                     if (res[runlist[0][0]]):
                         pass
                 except:
                     res[runlist[0][0]] = runtime - runlist[0][1]
-                if (runlist[0][3] < rearrange[re + 1])
+                if (runlist[0][3] < rearrange[re + 1]):
                     print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, runlist[0][0], runlist[0][3], runtime + runlist[0][3])
                     del runlist[0]
+                    re -= 1
+                    continue
                 elif runlist[0][3] == rearrange[re + 1]:
                     print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, runlist[0][0], runlist[0][3], runtime + runlist[0][3])
                     runlist[0][3] -= rearrange[re + 1]
+                    runtime = rearrange[re]
                     del runlist[0]
                 else:
                     print '  [ time %3d ] Run job %3d for %.2f secs' % (runtime, runlist[0][0], rearrange[re + 1] - runtime)
                     runlist[0][3] -= rearrange[re + 1] - runtime
+                    runtime = rearrange[re]
             else:
                 while len(runlist) != 0:
                     try:
@@ -248,16 +255,9 @@ if options.solve == True:
                             pass
                     except:
                         res[runlist[0][0]] = runtime - runlist[0][1]
-                    if (runlist[0][3] < rearrange[re + 1])
                         print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, runlist[0][0], runlist[0][3], runtime + runlist[0][3])
                         del runlist[0]
-                    elif runlist[0][3] == rearrange[re + 1]:
-                        print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, runlist[0][0], runlist[0][3], runtime + runlist[0][3])
-                        runlist[0][3] -= rearrange[re + 1]
-                        del runlist[0]
-                    else:
-                        print '  [ time %3d ] Run job %3d for %.2f secs' % (runtime, runlist[0][0], rearrange[re + 1] - runtime)
-                        runlist[0][3] -= rearrange[re + 1] - runtime
+                    
         
         print '\nFinal statistics:'
         turnaroundSum = 0.0
