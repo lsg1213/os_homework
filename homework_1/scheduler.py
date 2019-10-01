@@ -26,6 +26,7 @@ random.seed(options.seed)
 #debugging
 options.policy = 'STCF'
 options.solve = True
+options.jlist = '1,2,3'
 
 print ('ARG policy ' + options.policy)
 if options.jlist == '':
@@ -220,50 +221,61 @@ if options.solve == True:
         for i in joblist:
             i.append(i[2]) # joblist[i][3] remain = joblist[i][2] initializing
             rearrange.append(i[1])
+            res[i[0]] = 10000000
         rearrange = sorted(list(set(rearrange)))
-
+        keep = []
+        check = False
         for re in range(len(rearrange)):
             for i in joblist:
                 if i[1] == rearrange[re]:
                     runlist.append(i)
-            runlist = sorted(runlist, key=lambda a: a[3])
             
+            runlist = sorted(runlist,key=lambda a: a[3])
+            if len(keep) != 0:
+                if keep[1] != runlist[0][0] and check:
+                    print '  [ time %3d ] Run job %3d for %.2f secs' % (keep[0], keep[1], keep[2])
+                    runlist[keep[1]][3] -= rearrange[re] - runtime
+                    if (res[keep[1]] > runtime):
+                        res[keep[1]] = runtime
+                    runtime += rearrange[re] - runtime
+                    keep = []
             if re + 1 <= len(rearrange) - 1:
-                try:
-                    if (res[runlist[0][0]]):
-                        pass
-                except:
-                    res[runlist[0][0]] = runtime - runlist[0][1]
-                if (runlist[0][3] < rearrange[re + 1]):
+                if rearrange[re + 1] > runtime + runlist[0][3]:
                     print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, runlist[0][0], runlist[0][3], runtime + runlist[0][3])
+                    if (res[runlist[0][0]] > runtime):
+                        res[runlist[0][0]] = runtime
+                    runtime += runlist[0][3]
                     del runlist[0]
+                    keep = []
                     re -= 1
                     continue
-                elif runlist[0][3] == rearrange[re + 1]:
+                elif rearrange[re + 1] == runtime + runlist[0][3]:
                     print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, runlist[0][0], runlist[0][3], runtime + runlist[0][3])
-                    runlist[0][3] -= rearrange[re + 1]
-                    runtime = rearrange[re]
+                    if (res[runlist[0][0]] > runtime):
+                        res[runlist[0][0]] = runtime
+                    runtime += runlist[0][3]
                     del runlist[0]
+                    keep = []
+                    continue
                 else:
-                    print '  [ time %3d ] Run job %3d for %.2f secs' % (runtime, runlist[0][0], rearrange[re + 1] - runtime)
-                    runlist[0][3] -= rearrange[re + 1] - runtime
-                    runtime = rearrange[re]
+                    keep = [runtime, runlist[0][0], rearrange[re + 1] - runtime]
+                    check = True
+                    continue
+
             else:
                 while len(runlist) != 0:
-                    try:
-                        if (res[runlist[0][0]]):
-                            pass
-                    except:
-                        res[runlist[0][0]] = runtime - runlist[0][1]
-                        print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, runlist[0][0], runlist[0][3], runtime + runlist[0][3])
-                        del runlist[0]
-                    
+                    print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, runlist[0][0], runlist[0][3], runtime + runlist[0][3])
+                    if (res[runlist[0][0]] > runtime):
+                        res[runlist[0][0]] = runtime
+                    runtime += runlist[0][3]
+                    del runlist[0]
+ 
         
         print '\nFinal statistics:'
         turnaroundSum = 0.0
         waitSum       = 0.0
         responseSum   = 0.0
-
+        print(res)
 
          
 
