@@ -23,10 +23,6 @@ parser.add_option("-c", help="compute answers for me", action="store_true", defa
 
 random.seed(options.seed)
 
-#debugging
-options.policy = 'STCF'
-options.solve = True
-options.jlist = '1,2,3'
 
 print ('ARG policy ' + options.policy)
 if options.jlist == '':
