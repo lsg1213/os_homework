@@ -242,6 +242,8 @@ if options.solve == True:
             if re + 1 <= len(rearrange) - 1:
                 if rearrange[re + 1] > runtime + runlist[0][3]:
                     print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, runlist[0][0], runlist[0][3], runtime + runlist[0][3])
+                    turn[runlist[0][0]] = runtime + runlist[0][3] - runlist[0][1]
+                    wait[runlist[0][0]] = runtime + runlist[0][3]
                     if (res[runlist[0][0]] > runtime):
                         res[runlist[0][0]] = runtime
                     runtime += runlist[0][3]
@@ -251,6 +253,8 @@ if options.solve == True:
                     continue
                 elif rearrange[re + 1] == runtime + runlist[0][3]:
                     print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, runlist[0][0], runlist[0][3], runtime + runlist[0][3])
+                    turn[runlist[0][0]] = runtime + runlist[0][3] - runlist[0][1]
+                    wait[runlist[0][0]] = runtime + runlist[0][3]
                     if (res[runlist[0][0]] > runtime):
                         res[runlist[0][0]] = runtime
                     runtime += runlist[0][3]
@@ -265,6 +269,8 @@ if options.solve == True:
             else:
                 while len(runlist) != 0:
                     print '  [ time %3d ] Run job %3d for %.2f secs ( DONE at %.2f )' % (runtime, runlist[0][0], runlist[0][3], runtime + runlist[0][3])
+                    turn[runlist[0][0]] = runtime + runlist[0][3] - runlist[0][1]
+                    wait[runlist[0][0]] = runtime + runlist[0][3]
                     if (res[runlist[0][0]] > runtime):
                         res[runlist[0][0]] = runtime
                     runtime += runlist[0][3]
@@ -275,17 +281,18 @@ if options.solve == True:
         turnaroundSum = 0.0
         waitSum       = 0.0
         responseSum   = 0.0
-        print(res)
-
-         
-
-        # for job in joblist:
-        #     print '  [ time %3d ] Run job %3d for %.2f secs' % (runtime, job[0], runtime - prevrun),
-        #     if (timelist[job[0]] == job[2]):
-        #         print(' ( DONE at %.2f )' % runtime * 2 - prevrun)
-        #     else:
-        #         print('')
-        #         timelist[job[0]] += runtime - prevrun
+        for i in joblist:
+            wait[i[0]] -= i[1] + i[2]
+            res[i[0]] -= i[1]
+        
+        for i in joblist:
+            turnaroundSum += turn[i[0]]
+            responseSum += res[i[0]]
+            waitSum += wait[i[0]]
+            print '  Job %3d -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f' % (i[0], res[i[0]], turn[i[0]], wait[i[0]])
+        count = len(joblist)
+        
+        print '\n  Average -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f\n' % (responseSum/count, turnaroundSum/count, waitSum/count)
         
 
 
