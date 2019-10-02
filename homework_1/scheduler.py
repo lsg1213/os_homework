@@ -86,7 +86,7 @@ if options.solve == True:
         waitSum       = 0.0
         responseSum   = 0.0
 
-        
+        tmplist = sorted(tmplist, key=lambda a: a[0])
         for tmp in tmplist:
 
             response = tmp[1]
@@ -103,10 +103,16 @@ if options.solve == True:
         thetime = 0
         print 'Execution trace:'
         joblist = sorted(joblist, key=lambda a: a[1])
+        turn = {}
+        wait = {}
+        res = {}
         for job in joblist:
             if thetime < job[1]: 
                 thetime = job[1]
             print '  [ time %3d ] Run job %d which is arrived at %.2f for %.2f secs ( DONE at %.2f )' % (thetime, job[0], job[1], job[2], thetime + job[2])
+            res[job[0]] = thetime - job[1]
+            turn[job[0]] = thetime + job[2] - job[1]
+            wait[job[0]] = thetime - job[1]
             thetime += job[2]
 
         print '\nFinal statistics:'
@@ -115,19 +121,14 @@ if options.solve == True:
         turnaroundSum = 0.0
         waitSum       = 0.0
         responseSum   = 0.0
-        for tmp in joblist:
-            jobnum  = tmp[0]
-            runtime = tmp[1]
+        joblist = sorted(joblist, key=lambda a: a[0])
+        for job in joblist:
             
-            response   = t
-            turnaround = t + runtime
-            wait       = t
-            print '  Job %3d -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f' % (jobnum, response, turnaround, wait)
-            responseSum   += response
-            turnaroundSum += turnaround
-            waitSum       += wait
-            t += runtime
-            count = count + 1
+            print '  Job %3d -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f' % (job[0], res[job[0]], turn[job[0]], wait[job[0]])
+            responseSum   += res[job[0]]
+            turnaroundSum += turn[job[0]]
+            waitSum       += wait[job[0]]
+        count = len(joblist)
         print '\n  Average -- Response: %3.2f  Turnaround %3.2f  Wait %3.2f\n' % (responseSum/count, turnaroundSum/count, waitSum/count)
                      
     if options.policy == 'RR':
