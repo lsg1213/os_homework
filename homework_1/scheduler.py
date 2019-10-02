@@ -197,6 +197,7 @@ if options.solve == True:
         turnaroundSum = 0.0
         waitSum       = 0.0
         responseSum   = 0.0
+        joblist = sorted(joblist, key=lambda a: a[0])
         for i in joblist:
             turnaroundSum += turn[i[0]]
             responseSum += res[i[0]]
@@ -278,6 +279,7 @@ if options.solve == True:
         turnaroundSum = 0.0
         waitSum       = 0.0
         responseSum   = 0.0
+        joblist = sorted(joblist, key=lambda a: a[0])
         for i in joblist:
             wait[i[0]] -= i[1] + i[2]
             res[i[0]] -= i[1]
